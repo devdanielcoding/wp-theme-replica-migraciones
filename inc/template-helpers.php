@@ -43,11 +43,16 @@ if ( ! function_exists( 'theme_render_button' ) ) {
 			return;
 		}
 
+		$target = ! empty( $button['target'] ) ? sprintf( ' target="%s"', esc_attr( $button['target'] ) ) : '';
+		$rel    = ! empty( $button['rel'] ) ? sprintf( ' rel="%s"', esc_attr( $button['rel'] ) ) : '';
+
 		printf(
-			'<a class="button %3$s" href="%1$s">%2$s</a>',
+			'<a class="button %3$s" href="%1$s"%4$s%5$s>%2$s</a>',
 			esc_url( $button['url'] ),
 			esc_html( $button['label'] ),
-			esc_attr( $class )
+			esc_attr( $class ),
+			$target, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$rel // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		);
 	}
 }
@@ -68,6 +73,54 @@ if ( ! function_exists( 'theme_render_text_blocks' ) ) {
 
 			printf( '<p>%s</p>', esc_html( $block ) );
 		}
+	}
+}
+
+if ( ! function_exists( 'theme_section_classes' ) ) {
+	/**
+	 * Construye clases de seccion desde datos declarativos.
+	 *
+	 * @param string $type Tipo de seccion.
+	 * @param array  $args Datos de seccion.
+	 * @return string
+	 */
+	function theme_section_classes( $type, $args = array() ) {
+		$classes = array( 'section', 'section--' . sanitize_html_class( $type ) );
+
+		if ( ! empty( $args['variant'] ) ) {
+			$classes[] = 'section--' . sanitize_html_class( $args['variant'] );
+		}
+
+		if ( ! empty( $args['class'] ) ) {
+			$classes[] = sanitize_html_class( $args['class'] );
+		}
+
+		return implode( ' ', array_filter( $classes ) );
+	}
+}
+
+if ( ! function_exists( 'theme_render_image' ) ) {
+	/**
+	 * Renderiza una imagen migrada.
+	 *
+	 * @param array  $image Datos: file, alt, class, loading.
+	 * @param string $class Clase extra opcional.
+	 */
+	function theme_render_image( $image, $class = '' ) {
+		if ( empty( $image['file'] ) ) {
+			return;
+		}
+
+		$classes = trim( ( $image['class'] ?? '' ) . ' ' . $class );
+		$loading = $image['loading'] ?? 'lazy';
+
+		printf(
+			'<img src="%1$s" alt="%2$s" class="%3$s" loading="%4$s">',
+			esc_url( theme_image_url( $image['file'] ) ),
+			esc_attr( $image['alt'] ?? '' ),
+			esc_attr( $classes ),
+			esc_attr( $loading )
+		);
 	}
 }
 
